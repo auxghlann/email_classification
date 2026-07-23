@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recall & Documentation: FastAPI Router & Classifier Service</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --primary-light: #e0f2fe;
+            --success: #16a34a;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+            --error: #dc2626;
+            --error-bg: #fef2f2;
+            --error-border: #fecaca;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --code-bg: #f1f5f9;
+            --code-text: #0f172a;
+            --accent-purple: #4f46e5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.025em;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--primary);
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background-color: #f1f5f9;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        .section-content {
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.15rem;
+            color: var(--accent-purple);
+            margin: 1.25rem 0 0.5rem 0;
+        }
+
+        p, li {
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background-color: var(--code-bg);
+            color: var(--primary);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--card-border);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: var(--code-text);
+            padding: 0;
+            font-weight: normal;
+        }
+
+        /* Quiz Styles */
+        .question-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            transition: border-color 0.2s ease;
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: #ffffff;
+            border: 1px solid var(--card-border);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-muted);
+        }
+
+        .option-label:hover {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+            color: var(--text-main);
+        }
+
+        .option-label input[type="radio"] {
+            margin-right: 0.75rem;
+            accent-color: var(--primary);
+        }
+
+        .explanation {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .question-card.correct {
+            border-color: var(--success);
+        }
+
+        .question-card.correct .explanation {
+            display: block;
+            background-color: var(--success-bg);
+            color: var(--success);
+            border: 1px solid var(--success-border);
+        }
+
+        .question-card.incorrect {
+            border-color: var(--error);
+        }
+
+        .question-card.incorrect .explanation {
+            display: block;
+            background-color: var(--error-bg);
+            color: var(--error);
+            border: 1px solid var(--error-border);
+        }
+
+        .quiz-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: #ffffff;
+            font-weight: 700;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background-color: #f1f5f9;
+        }
+
+        .score-banner {
+            display: none;
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+            border: 1px solid var(--primary);
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .score-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .score-desc {
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="subtitle">Recall Session & Recall Quiz</div>
+        <h1>FastAPI Router & Classifier Service Integration</h1>
+    </header>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="showTab('docs')">Documentation</button>
+        <button class="tab-btn" onclick="showTab('quiz')">Recall Quiz (7 Questions)</button>
+    </div>
+
+    <!-- DOCUMENTATION SECTION -->
+    <div id="docs" class="section-content active">
+        <div class="card">
+            <h2>Overview</h2>
+            <p>This session introduced the core machine learning inference pipeline for the Email Classification API, bridging pre-trained <code>scikit-learn</code> model artifacts with FastAPI dependency injection and structured Pydantic schemas.</p>
+        </div>
+
+        <div class="card">
+            <h2>Key Components & Architecture</h2>
+            
+            <h3>1. Pydantic Request & Response Schemas (app/api/v1/model.py)</h3>
+            <p>Defines strong type validation for incoming classification requests and outgoing responses.</p>
+            <ul>
+                <li><code>EmailRequest</code>: Validates that payload contains non-null <code>text: str</code>.</li>
+                <li><code>EmailClassificationResponse</code>: Serializes prediction output returning <code>is_spam: bool</code> and <code>confidence: float</code> (rounded to 4 decimal places).</li>
+            </ul>
+
+            <h3>2. Classifier Service Layer (app/services/classifier_service.py)</h3>
+            <p>Encapsulates model loading, custom feature extraction, and prediction logic.</p>
+            <ul>
+                <li><code>_load_artifacts()</code>: Safely loads <code>spam_model.pkl</code> and <code>feature_names.pkl</code> via <code>joblib</code> during service initialization. Raises <code>FileNotFoundError</code> if artifacts are missing.</li>
+                <li><code>extract_features(text: str)</code>: Uses regular expressions (<code>re.findall(r"\b[a-zA-Z0-9]+\b", text.lower())</code>) and <code>Counter</code> to calculate word frequencies, aligning them strictly with <code>self.feature_names</code> in a single-row <code>pandas.DataFrame</code>.</li>
+                <li><code>classify(text: str)</code>: Invokes <code>predict()</code> and <code>predict_proba()</code> on the model, extracting class probability confidence score.</li>
+                <li><code>get_classifier_service()</code>: Module-level global singleton provider function used for dependency injection.</li>
+            </ul>
+
+            <h3>3. FastAPI APIRouter (app/api/v1/classifier_api.py)</h3>
+            <p>Exposes the HTTP POST endpoint <code>/api/v1/classify</code>.</p>
+            <ul>
+                <li>Uses <code>Depends(get_classifier_service)</code> to inject the singleton service instance into the endpoint handler without tight coupling.</li>
+            </ul>
+
+            <h3>4. Lifespan Pre-warming (main.py)</h3>
+            <p>Uses an <code>asynccontextmanager</code> lifespan handler to invoke <code>get_classifier_service()</code> during FastAPI application startup, ensuring model artifacts are loaded in memory prior to serving traffic.</p>
+        </div>
+
+        <div class="card">
+            <h2>Technical Highlights & Snippets</h2>
+            <pre><code># Service Feature Extraction Logic
+def extract_features(self, text: str) -> pd.DataFrame:
+    words = re.findall(r"\b[a-zA-Z0-9]+\b", text.lower())
+    word_counts = Counter(words)
+    features_dict = {word: [word_counts.get(word, 0)] for word in self.feature_names}
+    return pd.DataFrame(features_dict)</code></pre>
+
+            <pre><code># FastAPI Endpoint with Dependency Injection
+@router.post("/classify", response_model=EmailClassificationResponse)
+def classify_email(
+    payload: EmailRequest,
+    service: ClassifierService = Depends(get_classifier_service),
+) -> EmailClassificationResponse:
+    return service.classify(payload.text)</code></pre>
+        </div>
+    </div>
+
+    <!-- QUIZ SECTION -->
+    <div id="quiz" class="section-content">
+        
+        <div id="score-banner" class="score-banner">
+            <div id="score-title" class="score-title">Score: 0 / 7</div>
+            <div id="score-desc" class="score-desc">Review your answers and explanations below.</div>
+        </div>
+
+        <form id="quiz-form">
+
+            <!-- Question 1: Answer C -->
+            <div class="question-card" id="q1-card">
+                <div class="question-title">1. What is the primary purpose of <code>get_classifier_service()</code> in <code>app/services/classifier_service.py</code>?</div>
+                <div class="options-list">
+                    <label class="option-label">
+                        <input type="radio" name="q1" value="A">
+                        A) To retrain the scikit-learn Logistic Regression model on every API request.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q1" value="B">
+                        B) To fetch missing feature names from Kaggle Hub asynchronously.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q1" value="C">
+                        C) To provide a lazy-loaded global singleton instance of <code>ClassifierService</code> across FastAPI requests.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q1" value="D">
+                        D) To create temporary <code>.pkl</code> files in the virtual environment.
+                    </label>
+                </div>
+                <div class="explanation" id="q1-exp">
+                    <strong>Explanation:</strong> <code>get_classifier_service()</code> maintains a module-level global variable <code>_classifier_service</code>. If it is <code>None</code>, it instantiates the service once and reuses that instance for subsequent dependency injection calls.
+                </div>
+            </div>
+
+            <!-- Question 2: Answer A -->
+            <div class="question-card" id="q2-card">
+                <div class="question-title">2. How does <code>ClassifierService.extract_features()</code> transform raw email text for model prediction?</div>
+                <div class="options-list">
+                    <label class="option-label">
+                        <input type="radio" name="q2" value="A">
+                        A) Tokenizing words via regex, counting word occurrences using <code>Counter</code>, and mapping frequencies to <code>self.feature_names</code> in a single-row DataFrame.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q2" value="B">
+                        B) Using <code>TfidfVectorizer</code> imported directly from <code>sklearn.feature_extraction.text</code>.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q2" value="C">
+                        C) Truncating text to the first 50 characters and embedding them as dense floating-point vectors.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q2" value="D">
+                        D) Parsing text into a nested JSON dictionary with character counts.
+                    </label>
+                </div>
+                <div class="explanation" id="q2-exp">
+                    <strong>Explanation:</strong> <code>extract_features</code> uses <code>re.findall(r"\b[a-zA-Z0-9]+\b", text.lower())</code> and <code>Counter(words)</code> to build a single-row dictionary for all expected feature names before passing it to <code>pd.DataFrame()</code>.
+                </div>
+            </div>
+
+            <!-- Question 3: Answer D -->
+            <div class="question-card" id="q3-card">
+                <div class="question-title">3. How does the endpoint handler in <code>app/api/v1/classifier_api.py</code> receive the service instance?</div>
+                <div class="options-list">
+                    <label class="option-label">
+                        <input type="radio" name="q3" value="A">
+                        A) By creating a new <code>ClassifierService()</code> manually inside the router function body.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q3" value="B">
+                        B) By reading global variables directly imported from <code>main.py</code>.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q3" value="C">
+                        C) By fetching the instance from a Redis cache over TCP.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q3" value="D">
+                        D) Via FastAPI's dependency injection system using <code>service: ClassifierService = Depends(get_classifier_service)</code>.
+                    </label>
+                </div>
+                <div class="explanation" id="q3-exp">
+                    <strong>Explanation:</strong> FastAPI's <code>Depends()</code> mechanism handles injecting the singleton returned by <code>get_classifier_service()</code> directly into the function parameter.
+                </div>
+            </div>
+
+            <!-- Question 4: Answer B -->
+            <div class="question-card" id="q4-card">
+                <div class="question-title">4. What mechanism in <code>main.py</code> pre-warms model artifacts during server startup?</div>
+                <div class="options-list">
+                    <label class="option-label">
+                        <input type="radio" name="q4" value="A">
+                        A) A background thread started using <code>threading.Thread</code>.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q4" value="B">
+                        B) An <code>@asynccontextmanager</code> <code>lifespan</code> handler passed to <code>FastAPI(lifespan=...)</code> which calls <code>get_classifier_service()</code>.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q4" value="C">
+                        C) A custom middleware function registered via <code>app.add_middleware()</code>.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q4" value="D">
+                        D) A pytest fixture executed before uvicorn starts.
+                    </label>
+                </div>
+                <div class="explanation" id="q4-exp">
+                    <strong>Explanation:</strong> FastAPI's <code>lifespan</code> context manager runs code before the server yields to start receiving HTTP requests, ensuring `get_classifier_service()` loads the model beforehand.
+                </div>
+            </div>
+
+            <!-- Question 5: Answer C -->
+            <div class="question-card" id="q5-card">
+                <div class="question-title">5. How is the <code>confidence</code> score determined in <code>ClassifierService.classify()</code>?</div>
+                <div class="options-list">
+                    <label class="option-label">
+                        <input type="radio" name="q5" value="A">
+                        A) By subtracting the predicted integer class from 1.0.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q5" value="B">
+                        B) By dividing total text word count by feature count.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q5" value="C">
+                        C) By extracting the class probability from <code>model.predict_proba(features_df)[0][prediction_int]</code> and rounding to 4 decimal places.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q5" value="D">
+                        D) By summing all positive coefficients of the Logistic Regression model.
+                    </label>
+                </div>
+                <div class="explanation" id="q5-exp">
+                    <strong>Explanation:</strong> <code>model.predict_proba()</code> returns predicted probabilities for each class. The service retrieves the probability matching <code>prediction_int</code> to represent model confidence.
+                </div>
+            </div>
+
+            <!-- Question 6: Answer A -->
+            <div class="question-card" id="q6-card">
+                <div class="question-title">6. What Pydantic response model is returned by the <code>/api/v1/classify</code> endpoint?</div>
+                <div class="options-list">
+                    <label class="option-label">
+                        <input type="radio" name="q6" value="A">
+                        A) <code>EmailClassificationResponse</code> containing <code>is_spam: bool</code> and <code>confidence: float</code>.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q6" value="B">
+                        B) <code>EmailPayload</code>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q6" value="C">
+                        C) <code>ClassificationData</code>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q6" value="D">
+                        D) <code>SpamCheckOutput</code>
+                    </label>
+                </div>
+                <div class="explanation" id="q6-exp">
+                    <strong>Explanation:</strong> <code>EmailClassificationResponse</code> in <code>app/api/v1/model.py</code> specifies <code>is_spam</code> (boolean) and <code>confidence</code> (float).
+                </div>
+            </div>
+
+            <!-- Question 7: Answer D -->
+            <div class="question-card" id="q7-card">
+                <div class="question-title">7. Why are model <code>.pkl</code> files loaded into memory once during application startup rather than inside every API request?</div>
+                <div class="options-list">
+                    <label class="option-label">
+                        <input type="radio" name="q7" value="A">
+                        A) <code>joblib.load()</code> automatically deletes disk files after the first read.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q7" value="B">
+                        B) FastAPI blocks file system access inside router endpoints.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q7" value="C">
+                        C) Scikit-learn models can only exist once per operating system process.
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="q7" value="D">
+                        D) Disk I/O reads during every API request introduce heavy latency and throughput degradation.
+                    </label>
+                </div>
+                <div class="explanation" id="q7-exp">
+                    <strong>Explanation:</strong> Reading model artifacts from disk on every request is extremely slow and inefficient. Loading artifacts into memory once at startup ensures high-performance, low-latency API response times.
+                </div>
+            </div>
+
+            <div class="quiz-controls">
+                <button type="button" class="btn" onclick="submitQuiz()">Submit Quiz</button>
+                <button type="button" class="btn btn-secondary" onclick="resetQuiz()">Retake Quiz</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const answers = {
+            q1: "C",
+            q2: "A",
+            q3: "D",
+            q4: "B",
+            q5: "C",
+            q6: "A",
+            q7: "D"
+        };
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.section-content').forEach(sec => sec.classList.remove('active'));
+
+            if (tabName === 'docs') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('docs').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('quiz').classList.add('active');
+            }
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            const total = Object.keys(answers).length;
+
+            for (let i = 1; i <= total; i++) {
+                const qKey = 'q' + i;
+                const card = document.getElementById(qKey + '-card');
+                const selected = document.querySelector(`input[name="${qKey}"]:checked`);
+
+                card.classList.remove('correct', 'incorrect');
+
+                if (selected && selected.value === answers[qKey]) {
+                    score++;
+                    card.classList.add('correct');
+                } else {
+                    card.classList.add('incorrect');
+                }
+            }
+
+            const percentage = Math.round((score / total) * 100);
+            const scoreBanner = document.getElementById('score-banner');
+            const scoreTitle = document.getElementById('score-title');
+            const scoreDesc = document.getElementById('score-desc');
+
+            scoreTitle.textContent = `Score: ${score} / ${total} (${percentage}%)`;
+            if (percentage >= 80) {
+                scoreDesc.textContent = "Excellent job! You have a strong grasp of the FastAPI router & service architecture.";
+            } else {
+                scoreDesc.textContent = "Good attempt! Review the explanations highlighted below to solidify your understanding.";
+            }
+
+            scoreBanner.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            document.getElementById('quiz-form').reset();
+            document.querySelectorAll('.question-card').forEach(card => card.classList.remove('correct', 'incorrect'));
+            document.getElementById('score-banner').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
