@@ -13,7 +13,8 @@ The Email Classification service is a FastAPI-based REST API that classifies inc
   - `is_spam`: boolean indicating spam status (`True` if spam, `False` otherwise).
   - `confidence`: float probability score for the prediction.
 - [x] **GET /**: Health check status endpoint.
+- [x] **Streamlit Dashboard (streamlit_app.py)**: Interactive web interface allowing users to input raw email text or load sample payloads, inspect prediction status, view confidence gauges, and analyze vocabulary word feature frequencies.
 
 ## Scope & Out-of-Scope
-- **In-Scope**: Text feature extraction, model inference, FastAPI endpoints, automated pytest suite.
+- **In-Scope**: Text feature extraction, model inference, FastAPI REST endpoints, Streamlit dashboard UI, automated pytest suite.
 - **Out-of-Scope**: Online model re-training during API calls, database persistence.
