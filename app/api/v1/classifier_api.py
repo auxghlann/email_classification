@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.api.v1.model import EmailRequest, EmailClassificationResponse
+from app.schemas.email_schema import EmailRequest, EmailClassificationResponse
 from app.services.classifier_service import ClassifierService, get_classifier_service
 
 router = APIRouter()

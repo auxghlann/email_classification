@@ -12,7 +12,7 @@ def test_health_check() -> None:
 
 def test_classify_spam_email() -> None:
     spam_payload = {
-        "text": "Subject: Congratulations! You won a free prize. Click here now for money cash dollar claim."
+        "text": "Subject: Congratulations. You won a free prize. Click here now for money cash dollar claim."
     }
     response = client.post("/api/v1/classify", json=spam_payload)
     assert response.status_code == 200

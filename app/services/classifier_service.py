@@ -5,7 +5,7 @@ from typing import List, Optional
 import joblib
 import pandas as pd
 
-from app.api.v1.model import EmailClassificationResponse
+from app.schemas.email_schema import EmailClassificationResponse
 
 
 class ClassifierService:
